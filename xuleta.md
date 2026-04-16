@@ -32,19 +32,22 @@ Cinc elements: **estat inicial**, **accions**, **model de transició**, **cost**
 
 ```
 A ──4── B ──2── C ──3── E
-│               │
-└──7── D ──2───┘
+│                       │
+└────────7──── D ──2────┘
 h: A=6, B=3, C=1, D=2, E=0
 ```
+Arcs: A-B(4), B-C(2), C-E(3), A-D(7), D-E(2).
 
-| Iteració | Expandeix | FRONTERA (node: f=g+h) | TANCATS |
+| It. | Expandeix | FRONTERA (node: f=g+h) | TANCATS |
 |---|---|---|---|
-| 0 | — | A:6 | — |
-| 1 | A | B:7(4+3), D:9(7+2), C:11(10+1) | A |
-| 2 | B | C:7(6+1), D:9 | A,B |
-| 3 | C | E:8(6+2+0=9? no: g=6+3=9... revisem), D:9 | A,B,C |
+| 0 | — | A:0+6=6 | ∅ |
+| 1 | A (f=6) | B:4+3=7, D:7+2=9 | {A} |
+| 2 | B (f=7) | C:6+1=7, D:9 | {A,B} |
+| 3 | C (f=7) | E:9+0=9, D:9 | {A,B,C} |
+| 4 | D (f=9) | E:9 (no millora, g=9 des de D també) | {A,B,C,D} |
+| 5 | E (f=9) | **Objectiu!** Cost = 9. Camí: A→B→C→E | |
 
-> **Clau**: el cost d'un node a FRONTERA es pot **actualitzar** si es troba un camí més barat.
+> **Clau**: el cost d'un node a FRONTERA es pot **actualitzar** si es troba un camí més barat. Aquí D→E dóna g=9 igual que C→E, no s'actualitza.
 
 ### 1.4 Propietats de l'heurística
 
@@ -114,8 +117,9 @@ $$p(\text{acceptar}) = \begin{cases} 1 & \text{si } \Delta F \geq 0 \\ e^{\Delta
     / \      / \
    3   8    2   x
 ```
-- Esquerra: MIN tria min(3,8) = 3 → α del MAX = 3.
-- Dreta: MIN avalua 2. Com que 2 < α=3, MAX mai triarà dreta. Si hi ha més fills, es poden podar.
+- Esquerra: MIN avalua fill 3, després 8 → min(3,8) = 3. Ara α (del MAX arrel) s'actualitza a 3.
+- Dreta: MIN avalua fill 2 → β = 2. Com que β=2 ≤ α=3, es produeix **tall alfa**: MAX ja té una opció que val 3, i la branca dreta com a molt valdrà 2 (o menys). El node `x` **es poda** (no cal avaluar-lo).
+- Resultat: valor minimax de l'arrel = **3**.
 
 **Complexitat amb poda**: amb ordenació perfecta, s'aconsegueix $O(b^{p/2})$ → **duplica la profunditat** explorable.
 
